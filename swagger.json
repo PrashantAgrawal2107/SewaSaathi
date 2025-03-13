@@ -1,0 +1,1976 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "version": "1.0.0",
+      "title": "SewaSaathi API",
+      "description": "APIs for the SewaSaathi application by Prashant Agrawal"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:3000"
+      }
+    ],
+    "components": {
+      "securitySchemes": {
+        "JWT": {
+          "type": "apiKey",
+          "in": "header",
+          "name": "Authorization"
+        }
+      },
+      "schemas": {
+        "User": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "description": "Unique identifier for the user"
+        },
+        "username": {
+          "type": "string",
+          "description": "Unique username of the user"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email of the user",
+          "format": "email"
+        },
+        "password": {
+          "type": "string",
+          "description": "Password for user authentication"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the user"
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the user"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of the user (e.g., user or admin)",
+          "default": "user"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the user was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the user was last updated"
+        }
+      },
+      "required": ["username", "email", "password", "phone", "address"],
+      "description": "Schema for user details, including personal information and role"
+    },
+        "Worker": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "description": "Unique identifier for the worker"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the worker",
+          "minLength": 3
+        },
+        "email": {
+          "type": "string",
+          "description": "Email of the worker",
+          "format": "email"
+        },
+        "password": {
+          "type": "string",
+          "description": "Password for worker authentication"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the worker"
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of skills (e.g., plumbing, carpentry)"
+        },
+        "location": {
+          "type": "string",
+          "description": "Current location of the worker"
+        },
+        "onboarding": {
+          "type": "object",
+          "properties": {
+            "documents": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of documents submitted for onboarding"
+            },
+            "quizScore": {
+              "type": "number",
+              "description": "Score obtained in the onboarding quiz"
+            },
+            "status": {
+              "type": "string",
+              "description": "Onboarding status",
+              "enum": ["pending", "approved", "rejected"],
+              "default": "pending"
+            }
+          },
+          "description": "Details of worker's onboarding process"
+        },
+        "availability": {
+          "type": "boolean",
+          "description": "Worker's availability status",
+          "default": true
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the worker was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the worker was last updated"
+        }
+      },
+      "required": ["name", "email", "password", "phone", "skills", "location", "onboarding"],
+      "description": "Schema for worker details, including personal information, skills, and onboarding data"
+    },
+        "MiniCart": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "description": "Category of services"
+        },
+        "worker": {
+          "type": "string",
+          "description": "ID of the worker assigned to this category"
+        },
+        "services": {
+          "type": "array",
+          "description": "List of services in this mini cart",
+          "items": {
+            "type": "object",
+            "properties": {
+              "service": {
+                "type": "string",
+                "description": "ID of the service"
+              },
+              "quantity": {
+                "type": "integer",
+                "description": "Quantity of the service",
+                "default": 1
+              }
+            },
+            "required": ["service"]
+          }
+        }
+      },
+      "required": ["category", "worker", "services"],
+      "description": "Schema for a mini cart that includes services and an assigned worker for a specific category"
+    },
+    "Cart": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "description": "Unique identifier for the cart"
+        },
+        "user": {
+          "type": "string",
+          "description": "ID of the user who owns this cart"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location for the services"
+        },
+        "miniCarts": {
+          "type": "array",
+          "description": "Array of mini carts, one per service category",
+          "items": {
+            "$ref": "#/components/schemas/MiniCart"
+          }
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the cart",
+          "enum": ["pending", "completed"],
+          "default": "pending"
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "Total price of all services in the cart",
+          "default": 0
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the cart was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the cart was last updated"
+        }
+      },
+      "required": ["user", "location", "miniCarts", "totalPrice"],
+      "description": "Schema for a user's cart, containing multiple mini carts based on service categories"
+    },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Error message"
+          },
+          "statusCode": {
+            "type": "number",
+            "example": 400
+          }
+        }
+      },
+        "Review": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "description": "Unique identifier for the review"
+        },
+        "user": {
+          "type": "string",
+          "description": "ID of the user who created the review"
+        },
+        "worker": {
+          "type": "string",
+          "description": "ID of the worker being reviewed"
+        },
+        "rating": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Rating given to the worker (1-5)"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the review was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the review was last updated"
+        }
+      },
+      "required": ["user", "worker", "rating"],
+      "description": "Schema for reviews, linking users to workers and including a rating"
+    },
+    "Service": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "description": "Unique identifier for the service"
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the service (e.g., Plumbing, Carpentry)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the service (e.g., Pipe Fixing)"
+        },
+        "price": {
+          "type": "number",
+          "description": "Base price of the service"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the service"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the service was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the service was last updated"
+        }
+      },
+      "required": ["category", "name", "price", "description"],
+      "description": "Schema for a service offered in various categories with pricing and description details"
+    },
+    "Order": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "description": "Unique identifier for the order"
+        },
+        "cart": {
+          "type": "string",
+          "description": "ID of the cart associated with this order"
+        },
+        "user": {
+          "type": "string",
+          "description": "ID of the user who placed the order"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Total payment amount for the order"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Payment method used for the order (e.g., Card, UPI, Net Banking)"
+        },
+        "paymentStatus": {
+          "type": "string",
+          "description": "Current payment status of the order",
+          "enum": ["pending", "completed", "failed"],
+          "default": "pending"
+        },
+        "orderStatus": {
+          "type": "string",
+          "description": "Current status of the order",
+          "enum": ["pending", "completed", "cancelled"],
+          "default": "pending"
+        },
+        "transactionId": {
+          "type": "string",
+          "description": "Transaction ID for payment reference (if available)"
+        },
+        "orderDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the order was placed"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the order record was created"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the order record was last updated"
+        }
+      },
+      "required": ["cart", "user", "amount", "paymentMethod"],
+      "description": "Schema for an order, which represents a purchase transaction tied to a cart and a user"
+    }
+  }
+},
+    "paths": {
+        "/cart/add": {
+    "post": {
+      "summary": "Add a service to the cart",
+      "description": "Allows a user to add a service to their cart. A worker is required if the category is new.",
+      "tags": ["Cart"],
+      "security": [{ "JWT": {} }],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "serviceId": { "type": "string", "description": "ID of the service to add" },
+                "quantity": { "type": "integer", "default": 1, "description": "Quantity of the service" },
+                "worker": { "type": "string", "description": "ID of the worker for the service category" },
+                "location": { "type": "string", "description": "Updated location for the cart" }
+              },
+              "required": ["serviceId", "worker"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Service added to cart successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string", "example": "Service added to cart" },
+                  "cart": { "$ref": "#/components/schemas/Cart" }
+                }
+              }
+            }
+          }
+        },
+        "400": { "description": "Validation error or missing parameters" },
+        "404": { "description": "Service not found" },
+        "500": { "description": "Server error" }
+      }
+    }
+  },
+  "/cart/remove": {
+    "delete": {
+      "summary": "Remove a service or reduce its quantity from the cart",
+      "description": "Allows a user to remove a service or reduce its quantity in the cart.",
+      "tags": ["Cart"],
+      "security": [{ "JWT": {} }],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "serviceId": { "type": "string", "description": "ID of the service to remove or update" },
+                "quantity": { "type": "integer", "default": 1, "description": "Quantity to reduce" }
+              },
+              "required": ["serviceId"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Service removed or quantity reduced successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string", "example": "Service removed or quantity reduced" },
+                  "cart": { "$ref": "#/components/schemas/Cart" }
+                }
+              }
+            }
+          }
+        },
+        "404": { "description": "Cart or service not found" },
+        "500": { "description": "Server error" }
+      }
+    }
+  },
+  "/cart/clear": {
+    "delete": {
+      "summary": "Clear the entire cart",
+      "description": "Allows a user to clear all items in their cart.",
+      "tags": ["Cart"],
+      "security": [{ "JWT": {} }],
+      "responses": {
+        "200": {
+          "description": "Cart cleared successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string", "example": "Cart cleared successfully" },
+                  "cart": { "$ref": "#/components/schemas/Cart" }
+                }
+              }
+            }
+          }
+        },
+        "404": { "description": "Cart not found" },
+        "500": { "description": "Server error" }
+      }
+    }
+  },
+  "/cart/view": {
+    "get": {
+      "summary": "View the cart",
+      "description": "Allows a user to view their current cart, including all mini carts and services.",
+      "tags": ["Cart"],
+      "security": [{ "JWT": {} }],
+      "responses": {
+        "200": {
+          "description": "Cart fetched successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string", "example": "Cart fetched successfully" },
+                  "cart": { "$ref": "#/components/schemas/Cart" }
+                }
+              }
+            }
+          }
+        },
+        "404": { "description": "Cart not found" },
+        "500": { "description": "Server error" }
+      }
+    }
+  },
+  "/cart/update": {
+    "put": {
+      "summary": "Update the cart",
+      "description": "Allows a user to update the location or worker for a specific category in the cart.",
+      "tags": ["Cart"],
+      "security": [{ "JWT": {} }],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "category": { "type": "string", "description": "Category of the mini cart to update" },
+                "workerId": { "type": "string", "description": "ID of the new worker for the category" },
+                "location": { "type": "string", "description": "New location for the cart" }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Cart updated successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string", "example": "Cart updated successfully" },
+                  "cart": { "$ref": "#/components/schemas/Cart" }
+                }
+              }
+            }
+          }
+        },
+        "404": { "description": "Cart or category not found" },
+        "500": { "description": "Server error" }
+      }
+    }
+  },
+    "/services": {
+      "post": {
+        "tags": ["Services"],
+        "summary": "Add a new service",
+        "description": "Allows admin to add a new service",
+        "security": [{"JWT": {}}],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category": { "type": "string" },
+                  "name": { "type": "string" },
+                  "price": { "type": "number" },
+                  "description": { "type": "string" }
+                },
+                "required": ["category", "name", "price", "description"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Service added successfully" },
+          "400": { "description": "Invalid input" },
+          "500": { "description": "Internal server error" }
+        }
+      },
+      "get": {
+        "tags": ["Services"],
+        "summary": "Get all services",
+        "description": "Fetch all available services",
+        "responses": {
+          "200": {
+            "description": "Services fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "category": { "type": "string" },
+                      "name": { "type": "string" },
+                      "price": { "type": "number" },
+                      "description": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+    "/services/category/{category}": {
+      "get": {
+        "tags": ["Services"],
+        "summary": "Get services by category",
+        "description": "Fetch services filtered by a specific category",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Category to filter services"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Services fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "category": { "type": "string" },
+                      "name": { "type": "string" },
+                      "price": { "type": "number" },
+                      "description": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "No services found for this category" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+    "/services/search": {
+      "get": {
+        "tags": ["Services"],
+        "summary": "Search services",
+        "description": "Search services by name or description",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Search query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Services fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "category": { "type": "string" },
+                      "name": { "type": "string" },
+                      "price": { "type": "number" },
+                      "description": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Search query is required" },
+          "404": { "description": "No services found matching the search criteria" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+    "/services/{id}": {
+      "get": {
+        "tags": ["Services"],
+        "summary": "Get service by ID",
+        "description": "Fetch a specific service by its ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Service ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Service fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "category": { "type": "string" },
+                    "name": { "type": "string" },
+                    "price": { "type": "number" },
+                    "description": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid service ID" },
+          "404": { "description": "Service not found" },
+          "500": { "description": "Internal server error" }
+        }
+      },
+      "put": {
+        "tags": ["Services"],
+        "summary": "Update a service",
+        "description": "Allows admin to update service details",
+        "security": [{"JWT": {}}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Service ID"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category": { "type": "string" },
+                  "name": { "type": "string" },
+                  "price": { "type": "number" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Service updated successfully" },
+          "400": { "description": "Invalid service ID" },
+          "404": { "description": "Service not found" },
+          "500": { "description": "Internal server error" }
+        }
+      },
+      "delete": {
+        "tags": ["Services"],
+        "summary": "Delete a service",
+        "description": "Allows admin to delete a service",
+        "security": [{"JWT": {}}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Service ID"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Service deleted successfully" },
+          "400": { "description": "Invalid service ID" },
+          "404": { "description": "Service not found" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+    "/users/register": {
+    "post": {
+      "summary": "Register a new user",
+      "description": "Registers a new user with username, email, password, phone, and address.",
+      "tags": ["Users"],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "username": { "type": "string" },
+                "email": { "type": "string", "format": "email" },
+                "password": { "type": "string", "format": "password" },
+                "phone": { "type": "string" },
+                "address": { "type": "string" }
+              },
+              "required": ["username", "email", "password"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "User registered successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string" },
+                  "user": {
+                    "type": "object",
+                    "properties": {
+                      "username": { "type": "string" },
+                      "email": { "type": "string", "format": "email" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": { "description": "Username or email already exists" },
+        "500": { "description": "Error registering user" }
+      }
+    }
+  },
+  "/users/login": {
+    "post": {
+      "summary": "Login a user",
+      "description": "Logs in a user and returns a JWT token.",
+      "tags": ["Users"],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string", "format": "email" },
+                "password": { "type": "string", "format": "password" }
+              },
+              "required": ["email", "password"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Login successful",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string" },
+                  "token": { "type": "string" },
+                  "user": {
+                    "type": "object",
+                    "properties": {
+                      "username": { "type": "string" },
+                      "email": { "type": "string", "format": "email" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": { "description": "Invalid email or password" },
+        "500": { "description": "Error logging in user" }
+      }
+    }
+  },
+  "/users/me": {
+    "get": {
+      "summary": "Get user profile",
+      "description": "Returns the profile of the currently logged-in user.",
+      "tags": ["Users"],
+      "security": [{ "JWT": {} }],
+      "responses": {
+        "200": {
+          "description": "User profile retrieved successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "_id": { "type": "string" },
+                  "username": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "phone": { "type": "string" },
+                  "address": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "401": { "description": "Unauthorized" },
+        "500": { "description": "Error retrieving user profile" }
+      }
+    },
+    "put": {
+      "summary": "Update user profile",
+      "description": "Updates the profile of the currently logged-in user.",
+      "tags": ["Users"],
+      "security": [{ "JWT": {} }],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "username": { "type": "string" },
+                "phone": { "type": "string" },
+                "address": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "User profile updated successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "_id": { "type": "string" },
+                  "username": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "phone": { "type": "string" },
+                  "address": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "404": { "description": "User not found" },
+        "500": { "description": "Error updating user profile" }
+      }
+    }
+  },
+  "/users/logout": {
+    "post": {
+      "summary": "Logout user",
+      "description": "Logs out the currently logged-in user.(You can't try it here)",
+      "tags": ["Users"],
+      "security": [{ "JWT": {} }],
+      "responses": {
+        "200": { "description": "Logged out successfully" },
+        "401": { "description": "Unauthorized" }
+      }
+    }
+  },
+  "/users": {
+    "get": {
+      "summary": "Get all users (Admin only)",
+      "description": "Fetches all users in the system (admin only).",
+      "tags": ["Users"],
+      "security": [{ "JWT": {} }],
+      "responses": {
+        "200": {
+          "description": "All users retrieved successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "_id": { "type": "string" },
+                    "username": { "type": "string" },
+                    "email": { "type": "string", "format": "email" },
+                    "phone": { "type": "string" },
+                    "address": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": { "description": "Unauthorized" },
+        "403": { "description": "Forbidden (Admin only)" },
+        "500": { "description": "Error fetching users" }
+      }
+    }
+  },
+  "/users/{id}": {
+    "get": {
+      "summary": "Get user by ID (Admin only)",
+      "description": "Fetches a user by ID (admin only).",
+      "tags": ["Users"],
+      "security": [{ "JWT": {} }],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "User ID",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "User retrieved successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "_id": { "type": "string" },
+                  "username": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "phone": { "type": "string" },
+                  "address": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "400": { "description": "Invalid user ID" },
+        "404": { "description": "User not found" },
+        "401": { "description": "Unauthorized" },
+        "403": { "description": "Forbidden (Admin only)" },
+        "500": { "description": "Error fetching user by ID" }
+      }
+    },
+    "delete": {
+      "summary": "Delete user (Admin only)",
+      "description": "Deletes a user by ID (admin only).",
+      "tags": ["Users"],
+      "security": [{ "JWT": {} }],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "User ID",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": { "description": "User deleted successfully" },
+        "400": { "description": "Invalid user ID" },
+        "404": { "description": "User not found" },
+        "401": { "description": "Unauthorized" },
+        "403": { "description": "Forbidden (Admin only)" },
+        "500": { "description": "Error deleting user" }
+      }
+    }
+  },
+  "/workers": {
+    "post": {
+      "summary": "Register a new worker",
+      "description": "Registers a new worker with their details, including password hashing and onboarding information.",
+      "tags": ["Workers"],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string", "description": "Worker's full name" },
+                "email": { "type": "string", "format": "email", "description": "Worker's email address" },
+                "password": { "type": "string", "format": "password", "description": "Worker's password" },
+                "phone": { "type": "string", "description": "Worker's phone number" },
+                "skills": { "type": "array", "items": { "type": "string" }, "description": "Array of skills (e.g., plumbing, carpentry)" },
+                "location": { "type": "string", "description": "Worker's location" },
+                "onboarding": {
+                  "type": "object",
+                  "properties": {
+                    "documents": { "type": "array", "items": { "type": "string" }, "description": "Array of document names submitted during onboarding" },
+                    "quizScore": { "type": "number", "description": "Quiz score of the worker" },
+                    "status": { "type": "string", "description": "Onboarding status (e.g., pending, approved, rejected)" }
+                  },
+                  "description": "Onboarding information"
+                },
+                "availability": { "type": "boolean", "description": "Availability status of the worker" }
+              },
+              "required": ["name", "email", "password", "phone", "skills", "location", "onboarding"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "Worker registered successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string" },
+                  "worker": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string" },
+                      "email": { "type": "string", "format": "email" },
+                      "phone": { "type": "string" },
+                      "skills": { "type": "array", "items": { "type": "string" } },
+                      "location": { "type": "string" },
+                      "onboarding": {
+                        "type": "object",
+                        "properties": {
+                          "documents": { "type": "array", "items": { "type": "string" } },
+                          "quizScore": { "type": "number" },
+                          "status": { "type": "string" }
+                        }
+                      },
+                      "availability": { "type": "boolean" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": { "description": "Error registering worker" },
+        "500": { "description": "Server error" }
+      }
+    },
+    "get": {
+      "summary": "Get a list of all workers",
+      "description": "Fetches all workers, with optional query parameters to filter by category and location.",
+      "tags": ["Workers"],
+      "parameters": [
+        {
+          "name": "category",
+          "in": "query",
+          "description": "Filter workers by category/skill",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "location",
+          "in": "query",
+          "description": "Filter workers by location",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "List of workers retrieved successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "_id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "skills": { "type": "array", "items": { "type": "string" } },
+                    "location": { "type": "string" },
+                    "email": { "type": "string", "format": "email" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": { "description": "Error fetching workers" },
+        "500": { "description": "Server error" }
+      }
+    }
+  },"/workers/login": {
+    "post": {
+      "summary": "Login a worker",
+      "description": "Allows a worker to log in using email and password.",
+      "tags": ["Workers"],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string", "format": "email", "example": "worker@example.com" },
+                "password": { "type": "string", "format": "password", "example": "yourpassword" }
+              },
+              "required": ["email", "password"]
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Login successful",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string", "example": "Login successful" },
+                  "token": { "type": "string", "example": "your.jwt.token" },
+                  "worker": {
+                    "type": "object",
+                    "properties": {
+                      "workername": { "type": "string", "example": "John Doe" },
+                      "email": { "type": "string", "format": "email", "example": "worker@example.com" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Invalid email or password",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string", "example": "Invalid email or password" }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Server error during login",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string", "example": "Error logging in worker" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/workers/{id}": {
+    "get": {
+      "summary": "Get worker details by ID",
+      "description": "Fetches details of a worker by their ID.",
+      "tags": ["Workers"],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "The ID of the worker to retrieve",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Worker details retrieved successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "_id": { "type": "string" },
+                  "name": { "type": "string" },
+                  "skills": { "type": "array", "items": { "type": "string" } },
+                  "location": { "type": "string" },
+                  "email": { "type": "string", "format": "email" }
+                }
+              }
+            }
+          }
+        },
+        "400": { "description": "Invalid worker ID format" },
+        "404": { "description": "Worker not found" },
+        "500": { "description": "Server error" }
+      }
+    },
+    "patch": {
+      "summary": "Update worker details",
+      "description": "Updates worker's details, including their name, skills, location, and password (if provided).",
+      "tags": ["Workers"],
+      "security": [{ "JWT": [] }],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "The ID of the worker to update",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "skills": { "type": "array", "items": { "type": "string" } },
+                "location": { "type": "string" },
+                "email": { "type": "string", "format": "email" },
+                "password": { "type": "string", "format": "password" }
+              }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Worker details updated successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string" },
+                  "worker": {
+                    "type": "object",
+                    "properties": {
+                      "_id": { "type": "string" },
+                      "name": { "type": "string" },
+                      "skills": { "type": "array", "items": { "type": "string" } },
+                      "location": { "type": "string" },
+                      "email": { "type": "string", "format": "email" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": { "description": "Invalid worker ID" },
+        "404": { "description": "Worker not found" },
+        "500": { "description": "Server error" }
+      }
+    },
+    "delete": {
+      "summary": "Delete a worker (Admin only)",
+      "description": "Allows an admin to delete a worker by ID. Requires admin authentication.",
+      "tags": ["Workers"],
+      "security": [{ "JWT": [] }],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "Worker ID",
+          "schema": { "type": "string", "example": "64f27a3934e3a9d42b23b832" }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Worker deleted successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string", "example": "Worker deleted successfully" }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Worker not found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string", "example": "Worker not found" }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Error deleting worker",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string", "example": "Error deleting Worker" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/review/add": {
+      "post": {
+        "summary": "Add a new review",
+        "description": "Adds a review for a worker, including rating and optional comment.",
+        "tags": ["Reviews"],
+        "security": [{ "JWT": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workerId": { "type": "string", "description": "The worker ID being reviewed" },
+                  "rating": { "type": "number", "minimum": 1, "maximum": 5, "description": "Rating for the worker" }
+                },
+                "required": ["workerId", "rating"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Review added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "review": {
+                      "type": "object",
+                      "properties": {
+                        "user": { "type": "string" },
+                        "worker": { "type": "string" },
+                        "rating": { "type": "number" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid request data" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/review/delete/{reviewId}": {
+      "delete": {
+        "summary": "Delete a review",
+        "description": "Deletes a review by its ID if the user is authorized to delete it.",
+        "tags": ["Reviews"],
+        "security": [{ "JWT": [] }],
+        "parameters": [
+          {
+            "name": "reviewId",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the review to delete",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Review not found or not authorized to delete" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/review/update/{reviewId}": {
+      "put": {
+        "summary": "Update a review",
+        "description": "Updates the rating of an existing review.",
+        "tags": ["Reviews"],
+        "security": [{ "JWT": [] }],
+        "parameters": [
+          {
+            "name": "reviewId",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the review to update",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rating": { "type": "number", "minimum": 1, "maximum": 5 }
+                },
+                "required": ["rating"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Review updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "review": {
+                      "type": "object",
+                      "properties": {
+                        "user": { "type": "string" },
+                        "worker": { "type": "string" },
+                        "rating": { "type": "number" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Review not found or not authorized to update" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/review/worker/{workerId}": {
+      "get": {
+        "summary": "Get all reviews for a worker",
+        "description": "Fetches all reviews for a specific worker.",
+        "tags": ["Reviews"],
+        "parameters": [
+          {
+            "name": "workerId",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the worker to fetch reviews for",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of reviews retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": { "type": "string" },
+                      "user": { "type": "string" },
+                      "rating": { "type": "number" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "No reviews found for this worker" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/review/user": {
+      "get": {
+        "summary": "Get all reviews posted by a user",
+        "description": "Fetches all reviews posted by a specific user.",
+        "tags": ["Reviews"],
+        "security": [{ "JWT": [] }],
+        "responses": {
+          "200": {
+            "description": "List of user reviews retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": { "type": "string" },
+                      "worker": { "type": "string" },
+                      "rating": { "type": "number" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "No reviews found for this user" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/order/create": {
+  "post": {
+    "summary": "Create a new order",
+    "description": "Creates a new order for the user based on the cart.",
+    "tags": ["Orders"],
+    "security": [{ "JWT": [] }],
+    "requestBody": {
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "paymentMethod": { "type": "string", "description": "Payment method selected by user" }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Order created successfully",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string" },
+                "order": {
+                  "$ref": "#/components/schemas/Order"  
+                }
+              }
+            }
+          }
+        }
+      },
+      "404": { "description": "Cart not found" },
+      "500": { "description": "Server error" }
+    }
+  }
+},
+    "/order/complete/{orderId}": {
+      "put": {
+        "summary": "Mark order as completed",
+        "description": "Marks the order as completed (accessible by admin/worker).",
+        "tags": ["Orders"],
+        "security": [{ "JWT": [] }],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "description": "Order ID to be marked as completed",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order marked as completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Order not found" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/order/pay": {
+      "post": {
+        "summary": "Process payment for completed order",
+        "description": "Processes payment for a completed order using Stripe.(Will show failed...will work with frontend)",
+        "tags": ["Orders"],
+        "security": [{ "JWT": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "orderId": { "type": "string", "description": "Order ID to process payment for" },
+                  "paymentMethod": { "type": "string", "description": "Payment method (e.g., card, UPI)" }
+                },
+                "required": ["orderId", "paymentMethod"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "order": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Order not found" },
+          "400": { "description": "Order must be completed before payment" },
+          "500": { "description": "Payment failed" }
+        }
+      }
+    },
+    "/order/cancel/{orderId}": {
+      "delete": {
+        "summary": "Cancel order and refund",
+        "description": "Cancels the order and processes a refund if payment was completed.",
+        "tags": ["Orders"],
+        "security": [{ "JWT": [] }],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "description": "Order ID to be canceled",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order cancelled and payment refunded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "order": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Order not found" },
+          "500": { "description": "Error canceling the order" }
+        }
+      }
+    },
+    "/order/history": {
+      "get": {
+        "summary": "Get all orders by a specific user",
+        "description": "Fetches all orders placed by the user.",
+        "tags": ["Orders"],
+        "security": [{ "JWT": [] }],
+        "responses": {
+          "200": {
+            "description": "List of orders retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": { "type": "string" },
+                      "user": { "type": "string" },
+                      "orderStatus": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Error fetching orders" }
+        }
+      }
+    },
+    "/order/{orderId}": {
+      "get": {
+        "summary": "Get order by ID",
+        "description": "Fetches an order by its ID.",
+        "tags": ["Orders"],
+        "security": [{ "JWT": [] }],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "description": "Order ID to fetch",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": { "type": "string" },
+                    "orderStatus": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Order not found" },
+          "500": { "description": "Error fetching order" }
+        }
+      }
+    },
+    "/order": {
+      "get": {
+        "summary": "Get all orders (Admin only)",
+        "description": "Fetches all orders placed in the system (admin access only).",
+        "tags": ["Orders"],
+        "security": [{ "JWT": [] }],
+        "responses": {
+          "200": {
+            "description": "List of all orders retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": { "type": "string" },
+                      "user": { "type": "string" },
+                      "orderStatus": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Error fetching all orders" }
+        }
+      }
+    },
+    "/order/status/{status}": {
+      "get": {
+        "summary": "Get orders by status (Admin only)",
+        "description": "Fetches orders filtered by their status (admin access only).",
+        "tags": ["Orders"],
+        "security": [{ "JWT": [] }],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "description": "Order status to filter by",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of orders by status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": { "type": "string" },
+                      "orderStatus": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Error fetching orders by status" }
+        }
+      }
+    }
+    },
+    "definitions": {
+    "Cart": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "string",
+          "description": "ID of the user"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the cart"
+        },
+        "miniCarts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MiniCart"
+          }
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "Total price of the cart"
+        }
+      }
+    },
+    "MiniCart": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "description": "Category of the service"
+        },
+        "worker": {
+          "type": "string",
+          "description": "ID of the worker assigned"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Service"
+          }
+        }
+      }
+    },
+    "Service": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "type": "string",
+          "description": "Service ID"
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "Quantity of the service"
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Error message"
+        },
+        "status": {
+          "type": "integer",
+          "description": "HTTP status code"
+        }
+      }
+    }
+  }
+
+  }
+  
